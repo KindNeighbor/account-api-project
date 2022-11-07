@@ -3,7 +3,6 @@ package project2.Account.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import project2.Account.domain.Account;
-import project2.Account.domain.AccountStatus;
 import project2.Account.domain.AccountUser;
 import project2.Account.dto.AccountDto;
 import project2.Account.execption.AccountException;
@@ -33,6 +32,8 @@ public class AccountService {
         AccountUser accountUser = accountUserRepository.findById(userId)
                 .orElseThrow(() -> new AccountException(ErrorCode.USER_NOT_FOUND));
 
+        validateCreateAccount(accountUser);
+
         String newAccountNumber = accountRepository.findFirstByOrderByIdDesc()
                 .map(account -> (Integer.parseInt(account.getAccountNumber())) + 1 + "")
                 .orElse("1000000000");
@@ -46,6 +47,12 @@ public class AccountService {
                         .registeredAt(LocalDateTime.now())
                         .build()
         ));
+    }
+
+    private void validateCreateAccount(AccountUser accountUser) {
+        if (accountRepository.countByAccountUser(accountUser) == 10) {
+            throw new AccountException(ErrorCode.MAX_ACCOUNT_PER_USER_10);
+        }
     }
 
     @Transactional

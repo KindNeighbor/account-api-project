@@ -9,7 +9,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import project2.Account.domain.Account;
 import project2.Account.domain.AccountStatus;
+import project2.Account.domain.AccountUser;
+import project2.Account.dto.AccountDto;
+import project2.Account.execption.AccountException;
 import project2.Account.repository.AccountRepository;
+import project2.Account.repository.AccountUserRepository;
+import project2.Account.type.ErrorCode;
 
 import java.util.Optional;
 
@@ -24,6 +29,9 @@ import static org.mockito.Mockito.verify;
 public class AccountServiceTest {
     @Mock
     private AccountRepository accountRepository;
+
+    @Mock
+    private AccountUserRepository accountUserRepository;
 
     @InjectMocks
     private AccountService accountService;
@@ -93,5 +101,99 @@ public class AccountServiceTest {
         //then
         assertEquals("65789", account.getAccountNumber());
         assertEquals(AccountStatus.UNREGISTERED, account.getAccountStatus());
+    }
+
+    @Test
+    void createAccountSuccess() {
+        //given
+        AccountUser user = AccountUser.builder()
+                .id(12L)
+                .name("Choi").build();
+        given(accountUserRepository.findById(anyLong()))
+                .willReturn(Optional.of(user));
+        given(accountRepository.findFirstByOrderByIdDesc())
+                .willReturn(Optional.of(Account.builder()
+                        .accountUser(user)
+                        .accountNumber("1000000012").build()));
+
+        given(accountRepository.save(any()))
+                .willReturn(Account.builder()
+                        .accountUser(user)
+                        .accountNumber("1000000013").build());
+
+        ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
+
+        //when
+        AccountDto accountDto = accountService.createAccount(1L, 1000L);
+
+        //then
+        verify(accountRepository, times(1)).save(captor.capture());
+        assertEquals(12L, accountDto.getUserId());
+        assertEquals("1000000013", captor.getValue().getAccountNumber());
+    }
+
+    @Test
+    void createFirstAccount() {
+        //given
+        AccountUser user = AccountUser.builder()
+                .id(15L)
+                .name("Choi").build();
+        given(accountUserRepository.findById(anyLong()))
+                .willReturn(Optional.of(user));
+        given(accountRepository.findFirstByOrderByIdDesc())
+                .willReturn(Optional.empty());
+
+        given(accountRepository.save(any()))
+                .willReturn(Account.builder()
+                        .accountUser(user)
+                        .accountNumber("1000000013").build());
+
+        ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
+
+        //when
+        AccountDto accountDto = accountService.createAccount(1L, 1000L);
+
+        //then
+        verify(accountRepository, times(1)).save(captor.capture());
+        assertEquals(15L, accountDto.getUserId());
+        assertEquals("1000000000", captor.getValue().getAccountNumber());
+    }
+
+    @Test
+    @DisplayName("해당 유저 없음 - 계좌 생성 실패")
+    void createAccount_UserNotFound() {
+        //given
+        AccountUser user = AccountUser.builder()
+                .id(15L)
+                .name("Choi").build();
+        given(accountUserRepository.findById(anyLong()))
+                .willReturn(Optional.empty());
+
+        //when
+        AccountException exception = assertThrows(AccountException.class,
+                () -> accountService.createAccount(1L, 1000L));
+
+        //then
+        assertEquals(ErrorCode.USER_NOT_FOUND, exception.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("유저 당 최대 계좌는 10개")
+    void createAccount_maxAccountIs10() {
+        //given
+        AccountUser user = AccountUser.builder()
+                .id(12L)
+                .name("Choi").build();
+        given(accountUserRepository.findById(anyLong()))
+                .willReturn(Optional.of(user));
+        given(accountRepository.countByAccountUser(any()))
+                .willReturn(10);
+
+        //when
+        AccountException exception = assertThrows(AccountException.class,
+                () -> accountService.createAccount(1L, 1000L));
+
+        //then
+        assertEquals(ErrorCode.MAX_ACCOUNT_PER_USER_10, exception.getErrorCode());
     }
 }
