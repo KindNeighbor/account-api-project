@@ -1,4 +1,4 @@
-package project2.Account.domain;
+package project2.Account.type;
 
 public enum AccountStatus {
     IN_USE,
