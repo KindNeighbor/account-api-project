@@ -84,7 +84,6 @@ public class AccountService {
         return AccountDto.fromEntity(account);
     }
 
-    @Transactional
     private void validateDeleteAccount(AccountUser accountUser, Account account) {
         if (!Objects.equals(accountUser.getId(), account.getAccountUser().getId())) {
             throw new AccountException(USER_ACCOUNT_UN_MATCH);

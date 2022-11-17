@@ -164,9 +164,6 @@ public class AccountServiceTest {
     @DisplayName("해당 유저 없음 - 계좌 생성 실패")
     void createAccount_UserNotFound() {
         //given
-        AccountUser user = AccountUser.builder()
-                .id(15L)
-                .name("Choi").build();
         given(accountUserRepository.findById(anyLong()))
                 .willReturn(Optional.empty());
 

@@ -5,7 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import project2.Account.dto.TransactionDto;
+import project2.Account.dto.CancelBalance;
 import project2.Account.dto.UseBalance;
 import project2.Account.execption.AccountException;
 import project2.Account.service.TransactionService;
@@ -38,6 +38,27 @@ public class TransactionController {
             log.error("Failed to use balance. ");
 
             transactionService.saveFailedUseTransaction(
+                    request.getAccountNumber(),
+                    request.getAmount()
+            );
+
+            throw e;
+        }
+    }
+
+    @PostMapping("/transaction/cancel")
+    public CancelBalance.Response cancelBalance(
+            @Valid @RequestBody CancelBalance.Request request
+    ) {
+        try {
+            return CancelBalance.Response.from(
+                    transactionService.cancelBalance(
+                            request.getTransactionId(), request.getAccountNumber(), request.getAmount())
+            );
+        } catch (AccountException e) {
+            log.error("Failed to use balance. ");
+
+            transactionService.saveFailedCancelTransaction(
                     request.getAccountNumber(),
                     request.getAmount()
             );

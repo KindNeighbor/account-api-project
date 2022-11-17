@@ -1,14 +1,11 @@
 package project2.Account.dto;
 
 import lombok.*;
-import project2.Account.domain.Account;
+
 import project2.Account.domain.Transaction;
 import project2.Account.type.TransactionResultType;
 import project2.Account.type.TransactionType;
 
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.ManyToOne;
 import java.time.LocalDateTime;
 
 @Getter
