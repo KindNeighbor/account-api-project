@@ -51,7 +51,7 @@ public class CancelBalance {
         private TransactionResultType transactionResult;
         private String transactionId;
         private Long amount;
-        private LocalDateTime transactionAt;
+        private LocalDateTime transactedAt;
 
         public static Response from(TransactionDto transactionDto) {
             return Response.builder()
@@ -59,7 +59,7 @@ public class CancelBalance {
                     .transactionResult(transactionDto.getTransactionResultType())
                     .transactionId(transactionDto.getTransactionId())
                     .amount(transactionDto.getAmount())
-                    .transactionAt(transactionDto.getTransactedAt())
+                    .transactedAt(transactionDto.getTransactedAt())
                     .build();
         }
     }
