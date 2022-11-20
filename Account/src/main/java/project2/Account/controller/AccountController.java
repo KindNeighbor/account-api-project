@@ -7,7 +7,6 @@ import project2.Account.dto.AccountInfo;
 import project2.Account.dto.CreateAccount;
 import project2.Account.dto.DeleteAccount;
 import project2.Account.service.AccountService;
-import project2.Account.service.RedisTestService;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -17,7 +16,6 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AccountController {
     private final AccountService accountService;
-    private final RedisTestService redisTestService;
 
     @PostMapping("/account")
     public CreateAccount.Response createAccount(
@@ -53,11 +51,6 @@ public class AccountController {
                         .balance(accountDto.getBalance())
                         .build())
                 .collect(Collectors.toList());
-    }
-
-    @GetMapping("/get-lock")
-    public String getLock() {
-        return redisTestService.getLock();
     }
 
     @GetMapping("/account/{id}")

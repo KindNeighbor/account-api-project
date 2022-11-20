@@ -17,12 +17,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import project2.Account.domain.Account;
+import project2.Account.execption.AccountException;
 import project2.Account.type.AccountStatus;
 import project2.Account.dto.AccountDto;
 import project2.Account.dto.CreateAccount;
 import project2.Account.dto.DeleteAccount;
 import project2.Account.service.AccountService;
-import project2.Account.service.RedisTestService;
+import project2.Account.type.ErrorCode;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
@@ -32,9 +33,6 @@ import java.util.List;
 public class AccountControllerTest {
     @MockBean
     private AccountService accountService;
-
-    @MockBean
-    private RedisTestService redisTestService;
 
     @Autowired
     private MockMvc mockMvc;
@@ -71,15 +69,15 @@ public class AccountControllerTest {
         //given
         given(accountService.getAccount(anyLong()))
                 .willReturn(Account.builder()
-                        .accountNumber("3456")
+                        .accountNumber("1234")
                         .accountStatus(AccountStatus.IN_USE)
                         .build());
 
         //when
         //then
-        mockMvc.perform(get("/account/876"))
+        mockMvc.perform(get("/account/123"))
                 .andDo(print())
-                .andExpect(jsonPath("$.accountNumber").value("3456"))
+                .andExpect(jsonPath("$.accountNumber").value("1234"))
                 .andExpect(jsonPath("$.accountStatus").value("IN_USE"))
                 .andExpect(status().isOk());
     }
@@ -134,5 +132,20 @@ public class AccountControllerTest {
                 .andExpect(jsonPath("$.userId").value(1))
                 .andExpect(jsonPath("$.accountNumber").value("1234567890"))
                 .andDo(print());
+    }
+
+    @Test
+    void failGetAccount() throws Exception {
+        //given
+        given(accountService.getAccount(anyLong()))
+                .willThrow(new AccountException(ErrorCode.ACCOUNT_NOT_FOUND));
+
+        //when
+        //then
+        mockMvc.perform(get("/account/123"))
+                .andDo(print())
+                .andExpect(jsonPath("$.errorCode").value("ACCOUNT_NOT_FOUND"))
+                .andExpect(jsonPath("$.errorMessage").value("계좌가 없습니다."))
+                .andExpect(status().isOk());
     }
 }
