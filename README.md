@@ -1,4 +1,4 @@
-# zerobase_project_2
+# acoount api project
 
 ### 프로젝트 기간
 #### 11.8 ~ 11.21
